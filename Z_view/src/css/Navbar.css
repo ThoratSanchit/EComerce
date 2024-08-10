@@ -1,0 +1,66 @@
+/* Base styles for the search form */
+.search-form {
+  margin-left: auto;
+}
+
+/* Adjust any specific positioning if needed */
+.navbar .form-inline {
+  display: flex;
+  align-items: center;
+}
+
+.navbar {
+  border-bottom: 2px solid #343a40; /* Optional: adds a bottom border */
+}
+
+.navbar-brand {
+  color: #ffffff; /* White text for brand */
+}
+
+.navbar-nav .nav-link {
+  color: #ffffff; /* White text for navbar links */
+}
+
+.navbar-nav .nav-link:hover {
+  color: #e9ecef; /* Light color on hover for better visibility */
+}
+
+.navbar-toggler {
+  border-color: #ffffff; /* White border for the toggler button */
+}
+
+.navbar-toggler-icon {
+  background-image: url('data:image/svg+xml;charset=utf8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30"%3E%3Cpath stroke="%23ffffff" stroke-width="2" d="M5 8h20M5 15h20M5 22h20"/%3E%3C/svg%3E'); /* White icon for toggler */
+}
+
+/* Style for the search input */
+.search-form .form-control {
+  border: 1px solid #ffffff; /* White border for search input */
+  color: #ffffff; /* White text for search input */
+}
+
+/* Dark placeholder text color */
+.search-form .form-control::placeholder {
+  color: #343a40; /* Dark color for placeholder text */
+  opacity: 1; /* Ensure placeholder text is fully opaque */
+}
+
+/* Button styles */
+.search-form .btn {
+  border-color: #ffffff; /* White border for button */
+  color: #ffffff; /* White text for button */
+}
+
+.search-form .btn-outline-light {
+  color: #ffffff; /* White text for button */
+  border-color: #ffffff; /* White border for button */
+}
+
+.search-form .btn-outline-light:hover {
+  background-color: #ffffff; /* White background on hover */
+  color: #343a40; /* Dark text on hover */
+}
+
+body {
+  padding-top: 56px; /* Adjust this value according to the height of your navbar */
+}
