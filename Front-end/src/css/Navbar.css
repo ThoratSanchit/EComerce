@@ -1,0 +1,168 @@
+.search-form {
+  margin: 0 auto; /* Center the search form horizontally */
+  width: 40%; /* Adjust the width of the search form */
+}
+
+/* Adjust any specific positioning if needed */
+.navbar .form-inline {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Center items within the form */
+}
+
+.navbar {
+  border-bottom: 2px solid #343a40; /* Optional: adds a bottom border */
+}
+
+.navbar-brand,
+.navbar-nav .nav-link {
+  color: #ffffff; /* White text for brand and navbar links */
+}
+
+.navbar-nav .nav-link:hover {
+  color: #e9ecef; /* Light color on hover for better visibility */
+}
+
+.navbar-toggler {
+  border-color: #ffffff; /* White border for the toggler button */
+}
+
+/* Style for the search input */
+.search-form .form-control {
+  border: 1px solid #ffffff; /* White border for search input */
+  color: #0b0a0a; /* Dark text for search input */
+  background-color: #ffffff; /* White background color */
+  width: 100%; /* Make the search input take up the full width of the form */
+}
+
+/* Adjust placeholder color */
+.search-form .form-control::placeholder {
+  color: #000000; /* Black color for placeholder text */
+}
+
+/* Button styles */
+.search-form .btn-outline-light {
+  color: #343a40; /* Dark text color for button */
+  border-color: #343a40; /* Dark border color for button */
+  background-color: #ffffff; /* White background color */
+}
+
+.search-form .btn-outline-light:hover {
+  background-color: #e9ecef; /* Light grey background on hover */
+  color: #343a40; /* Dark text color on hover */
+}
+
+.navbar-nav.ml-auto {
+  margin-left: auto;
+}
+
+.navbar-nav .nav-item {
+  margin-left: 20px; /* Adjust this value as needed */
+}
+
+.navbar-nav .nav-item:first-child {
+  margin-left: 0; /* Remove margin from the first item */
+}
+
+body {
+  padding-top: 56px;
+}
+/* Increase the height and add underline effect on click */
+.nav-item {
+  position: relative;
+  transition: height 0.3s ease-in-out; /* Smooth height transition */
+}
+
+.nav-item:active {
+  height: 3rem; /* Increase the height when clicked */
+}
+
+/* Underline effect */
+.nav-link {
+  color: #ffffff; /* White text for non-active links */
+  text-decoration: none; /* Remove underline from non-active links */
+  position: relative;
+}
+
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px; /* Adjust as needed to position the underline */
+  width: 100%;
+  height: 2px;
+  background-color: transparent; /* Make the underline transparent */
+  transform: scaleX(0);
+  transition: transform 0.3s ease-in-out;
+}
+
+.nav-link.active::after,
+.nav-link:hover::after {
+  transform: scaleX(0); /* Ensure no underline appears on hover or active */
+}
+
+.navbar .dropdown-menu {
+  background-color: #343a40;
+  border: none;
+}
+
+.dropdown-item:hover {
+  background-color: #495057;
+}
+
+/* Navbar.css */
+.profile-icon {
+  color: white; /* Adjust icon color */
+}
+
+.dropdown-menu {
+  background-color: #343a40;
+  border-radius: 0.5rem; /* Add some rounding to the corners */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Add a subtle shadow for depth */
+  padding: 0; /* Remove default padding */
+  overflow: hidden; /* Ensure no overflow */
+}
+.dropdown-item {
+  color: white;
+  padding: 12px 20px; /* Adjust padding for better spacing */
+  font-size: 0.9rem; /* Slightly smaller font for a sleek look */
+  transition: background-color 0.3s ease-in-out; /* Smooth background transition */
+}
+
+.dropdown-item:hover {
+  background-color: #495057;
+}
+
+.dropdown-divider {
+  border-top: 1px solid rgba(255, 255, 255, 0.1); /* Light border for divider */
+  margin: 0; /* Remove default margin */
+}
+
+/* .auth-color{
+  color: rgb(235, 244, 244);
+} */
+
+.dropdown-item-text {
+  padding: 15px 20px; /* Adjust padding for a comfortable fit */
+  background-color: #495057; /* Slightly lighter background */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Border between info and actions */
+  font-size: 0.85rem; /* Adjust font size */
+  color: #e9ecef; /* Text color */
+}
+
+/* Auth Color for User Info */
+.auth-color {
+  color: #e9ecef; /* Ensure text color matches the theme */
+  margin-bottom: 5px; /* Add some spacing between name and email */
+}
+
+/* Align Logout Button to the Right */
+.dropdown-item.logout {
+  text-align: center; /* Center-align the logout button */
+  background-color: #dc3545; /* Red background for emphasis */
+  color: white;
+}
+
+.dropdown-item.logout:hover {
+  background-color: #c82333; /* Darken red on hover */
+}

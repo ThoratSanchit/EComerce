@@ -1,0 +1,25 @@
+.button-spacing {
+    margin-right: 45px; /* Space between buttons */
+  }
+  
+  .button-spacing:last-of-type {
+    margin-right: 0; /* No margin on the last button */
+  }
+  
+  .mt-3 {
+    margin-top: 1rem; /* Space above buttons */
+  }
+  
+  .image-container {
+    gap: 1rem; /* Adjust gap as needed */
+    display: flex;
+  }
+  
+  .img-thumbnail {
+    margin-right: 1.4rem; /* Adjust spacing between images */
+  }
+  
+  .img-thumbnail:last-of-type {
+    margin-right: 0; /* Remove margin on the last image */
+  }
+  

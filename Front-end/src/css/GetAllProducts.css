@@ -1,0 +1,19 @@
+.button-spacing {
+  margin-right: 0.5rem; /* Adjust margin for responsive layout */
+}
+
+.button-spacing:last-of-type {
+  margin-right: 0; /* No margin on the last button */
+}
+
+.image-container {
+  gap: 0.5rem; /* Adjust gap for responsive layout */
+}
+
+.img-thumbnail {
+  margin-right: 0.5rem; /* Adjust margin for responsive layout */
+}
+
+.img-thumbnail:last-of-type {
+  margin-right: 0; /* Remove margin on the last image */
+}
