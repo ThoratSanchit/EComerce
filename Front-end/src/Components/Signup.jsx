@@ -36,34 +36,6 @@ export default function Signup() {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-
-  //   if (!validate()) return;
-
-  //   try {
-  //     const response = await axios.post('http://localhost:3000/auth/register', formData);
-  //     toast.success('Signup successful!');
-
-  //     // Store user email in localStorage (could be a token or other info)
-  //     localStorage.setItem('userEmail', response.data.email);
-  //     localStorage.setItem('userName',response.data.name)
-
-  //     setFormData({
-  //       name: '',
-  //       email: '',
-  //       password: '',
-  //     });
-
-  //     // Redirect to login or another page after successful signup
-  //     navigate('/');
-  //   } catch (error) {
-  //     console.error('Error signing up:', error);
-  //     toast.error(error.response?.data?.message || 'Error signing up. Please try again.');
-  //   }
-  // };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
   
@@ -71,11 +43,12 @@ export default function Signup() {
   
     try {
       const response = await axios.post('http://localhost:3000/auth/register', formData);
-      toast.success('Signup successful!');
+      toast.success(response.data.message);
   
       // Store user email and name in localStorage
       localStorage.setItem('userEmail', response.data.email);
       localStorage.setItem('userName', response.data.name);
+      localStorage.setItem('userId', response.data.userID)
       console.log(response.data)
   
       setFormData({
@@ -86,7 +59,7 @@ export default function Signup() {
   
       // Redirect to home page or trigger a re-render after signup
       navigate('/'); // Navigate to home page after signup
-      window.location.reload(); // Reload the page to update the Navbar
+      window.location.reload(); 
     } catch (error) {
       console.error('Error signing up:', error);
       toast.error(error.response?.data?.message || 'Error signing up. Please try again.');

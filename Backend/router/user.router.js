@@ -1,4 +1,3 @@
-//user.route.js
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -14,23 +13,32 @@ router.post('/register', async (req, res) => {
   try {
     // Check if the user already exists
     let user = await User.findOne({ email });
+    const userID = +Date.now(); // Generate a unique userID
+
     if (user) {
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(400).json({ message: 'User already exists please login' });
     }
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Save the user to the database
+    // Create a new user
     user = new User({
       name,
       email,
       password: hashedPassword,
+      userID
     });
 
     await user.save();
 
-    res.status(201).json({ message: 'User registered successfully', email: user.email });
+    // Respond with user details including userID
+    res.status(201).json({ 
+      message: 'User registered successfully',
+      email: user.email,
+      name: user.name,
+      userID: user.userID  
+    });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
@@ -42,22 +50,22 @@ router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Check if the user exists
+   
     let user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res.status(400).json({ message: 'Enter the valid Email.' });
     }
 
-    // Compare passwords
+  
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res.status(400).json({ message: 'Enter the valid Password.' });
     }
 
-    // Generate JWT token
+   
     const payload = {
       user: {
-        id: user.id,
+        id: user.userID, 
       },
     };
 
@@ -79,10 +87,10 @@ router.post('/login', async (req, res) => {
 // Middleware to verify the JWT token
 const authenticateToken = (req, res, next) => {
   const token = req.headers['x-access-token'];
-  if (!token) return res.sendStatus(401); // Unauthorized
+  if (!token) return res.sendStatus(401); 
 
   jwt.verify(token, SECRET_KEY, (err, user) => {
-    if (err) return res.sendStatus(403); // Forbidden
+    if (err) return res.sendStatus(403); 
     req.user = user;
     next();
   });
@@ -91,15 +99,15 @@ const authenticateToken = (req, res, next) => {
 // Authentication check route
 router.get('/check-auth', authenticateToken, async (req, res) => {
   try {
-    // Fetch user information based on the token payload
-    const user = await User.findById(req.user.user.id).select('-password');
-    if (!user) return res.sendStatus(404); // Not Found
+    
+    const user = await User.findOne({ userID: req.user.user.id }).select('-password');
+    if (!user) return res.sendStatus(404);
 
-    res.json({ email: user.email, name: user.name }); // Respond with user details
+    res.json({ email: user.email, name: user.name, userID: user.userID }); 
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
   }
 });
 
-module.exports = {router,authenticateToken};
+module.exports = { router, authenticateToken };
