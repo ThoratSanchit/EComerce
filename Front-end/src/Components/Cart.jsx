@@ -1,34 +1,35 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { Modal, Button, Spinner } from 'react-bootstrap'; 
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
-export default function Cart() {
-  const [cart, setCart] = useState(null);
-  const [user, setUser] = useState(null); // Add state for user info
+const Cart = () => {
+  const [cartItems, setCartItems] = useState([]);
+  const [totalAmount, setTotalAmount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
     const fetchCart = async () => {
       try {
-        const token = localStorage.getItem('authToken');
-        const cartResponse = await axios.get('http://localhost:3000/cart/view-cart', {
-          headers: { 'x-access-token': token }
-        });
-        setCart(cartResponse.data.data);
+        const userID = localStorage.getItem('userID'); 
+        // if (!userID) {
+        //   alert('Please Login or signup.');
+        //   return;
+        // }
 
-        // Fetch user info
-        const userResponse = await axios.get('http://localhost:3000/auth/check-auth', {
-          headers: { 'x-access-token': token }
+        const response = await axios.get('http://localhost:3000/cart/get-cart', {
+          headers: {
+            'x-user-id': userID
+          }
         });
-        setUser(userResponse.data);
-      } catch (err) {
-        console.error(err);
-        setError('Failed to fetch data.');
-        toast.error('Failed to fetch data.');
-      } finally {
+
+        setCartItems(response.data.data.items);
+        setTotalAmount(response.data.totalAmount);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching cart:', error.message);
         setLoading(false);
       }
     };
@@ -36,93 +37,104 @@ export default function Cart() {
     fetchCart();
   }, []);
 
-  const handleQuantityChange = async (productId, newQuantity) => {
+  const handleRemove = async (itemId) => {
     try {
-      const token = localStorage.getItem('authToken');
-      await axios.put('http://localhost:3000/cart/update-cart', 
-        { productId, quantity: newQuantity }, 
-        { headers: { 'x-access-token': token } }
-      );
-      toast.success('Cart updated successfully!');
-      // Refresh cart data
-      await fetchCart();
-    } catch (err) {
-      console.error(err);
-      toast.error('Failed to update cart.');
-    }
-  };
+      const userID = localStorage.getItem('userID');
+      if (!userID) {
+        alert('Please Login or signup.');
+        return;
+      }
 
-  const handleRemove = async (productId) => {
-    try {
-      const token = localStorage.getItem('authToken');
-      await axios.delete(`http://localhost:3000/cart/remove-from-cart/${productId}`, {
-        headers: { 'x-access-token': token }
+      await axios.delete(`http://localhost:3000/cart/remove-item/${itemId}`, {
+        headers: {
+          'x-user-id': userID
+        }
       });
-      toast.success('Product removed from cart!');
-      // Refresh cart data
-      await fetchCart();
-    } catch (err) {
-      console.error(err);
-      toast.error('Failed to remove product.');
+
+  
+      setCartItems(cartItems.filter(item => item._id !== itemId));
+    } catch (error) {
+      console.error('Error removing item from cart:', error.message);
     }
   };
 
-  if (loading) return <div className="container mt-3">Loading...</div>;
-  if (error) return <div className="container mt-3 text-danger">{error}</div>;
+  const handleImageClick = (imgUrl) => {
+    setSelectedImage(imgUrl);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedImage(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="container mt-5 text-center">
+        <Spinner animation="border" role="status">
+          <span className="sr-only"></span>
+        </Spinner>
+      </div>
+    );
+  }
 
   return (
-    <div className="container mt-3">
-      <h2 className="mb-3">Your Cart</h2>
-      {user && <p><strong>Logged in as:</strong> {user.name} ({user.email})</p>}
-      {cart && cart.items.length > 0 ? (
-        <div className="table-responsive">
-          <table className="table table-striped">
-            <thead>
-              <tr>
-                <th>Product</th>
-                <th>Price</th>
-                <th>Quantity</th>
-                <th>Subtotal</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {cart.items.map(item => (
-                <tr key={item.product._id}>
-                  <td>{item.name}</td>
-                  <td>${item.price.toFixed(2)}</td>
-                  <td>
-                    <input
-                      type="number"
-                      min="1"
-                      value={item.quantity}
-                      onChange={(e) => handleQuantityChange(item.product._id, parseInt(e.target.value))}
-                      className="form-control"
-                      style={{ width: '80px' }}
-                    />
-                  </td>
-                  <td>${(item.price * item.quantity).toFixed(2)}</td>
-                  <td>
-                    <button
-                      onClick={() => handleRemove(item.product._id)}
-                      className="btn btn-danger btn-sm"
-                    >
-                      Remove
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              <tr>
-                <td colSpan="3" className="text-end"><strong>Total:</strong></td>
-                <td colSpan="2"><strong>${cart.totalAmount.toFixed(2)}</strong></td>
-              </tr>
-            </tbody>
-          </table>
+    <div className="container mt-5">
+      <h1>Your Cart</h1>
+      {cartItems.length > 0 ? (
+        <div>
+          <div className="row">
+            {cartItems.map((item) => (
+              <div key={item._id} className="col-12 col-md-6 mb-4">
+                <div className="card shadow-sm">
+                  <div className="row no-gutters">
+                    <div className="col-md-4">
+                      {item.product.images.length > 0 && (
+                        <img
+                          src={item.product.images[0].url}
+                          alt={item.product.images[0].alt}
+                          className="card-img"
+                          style={{ cursor: 'pointer' }}
+                          onClick={() => handleImageClick(item.product.images[0].url)}
+                        />
+                      )}
+                    </div>
+                    <div className="col-md-8">
+                      <div className="card-body">
+                        <h5 className="card-title mb-3">{item.product.name}</h5>
+                        <p className="card-text mb-3"><strong>Price:</strong> ${item.product.price.toFixed(2)}</p>
+                        <p className="card-text mb-3"><strong>Quantity:</strong> {item.quantity}</p>
+                        <Button variant="danger" onClick={() => handleRemove(item._id)}>Remove</Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4">
+            <h3>Total Amount: ${totalAmount.toFixed(2)}</h3>
+          </div>
         </div>
       ) : (
-        <p>Your cart is empty.</p>
+        <div className="alert alert-info">Your cart is empty.</div>
       )}
-      <ToastContainer />
+
+    
+      <Modal show={showModal} onHide={handleCloseModal} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Product Image</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedImage && <img src={selectedImage} alt="Selected" className="img-fluid" />}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseModal}>Close</Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
-}
+};
+
+export default Cart;
+

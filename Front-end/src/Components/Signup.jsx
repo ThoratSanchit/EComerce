@@ -48,7 +48,7 @@ export default function Signup() {
       // Store user email and name in localStorage
       localStorage.setItem('userEmail', response.data.email);
       localStorage.setItem('userName', response.data.name);
-      localStorage.setItem('userId', response.data.userID)
+      localStorage.setItem('userID', response.data.userID)
       console.log(response.data)
   
       setFormData({

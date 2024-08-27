@@ -143,6 +143,7 @@ export default function Login() {
       const response = await axios.post('http://localhost:3000/auth/login', formData);
       if (response.data.token) {
         localStorage.setItem('authToken', response.data.token);
+        localStorage.setItem('userID',response.data.userID)
         toast.success('Login successful!');
         window.location.replace('/');
       } else {
