@@ -1,11 +1,9 @@
-
-
-import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
-import axios from 'axios';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import { motion } from 'framer-motion';
-import '../css/GetAllProducts.css'; // Ensure this CSS file is imported
+import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+import axios from "axios";
+import "bootstrap/dist/css/bootstrap.min.css";
+import { motion } from "framer-motion";
+import "../css/GetAllProducts.css";
 
 export default function SearchProducts() {
   const [products, setProducts] = useState([]);
@@ -15,13 +13,15 @@ export default function SearchProducts() {
 
   useEffect(() => {
     const fetchProducts = async () => {
-      const query = new URLSearchParams(location.search).get('keyword');
+      const query = new URLSearchParams(location.search).get("keyword");
       if (query) {
         try {
-          const response = await axios.get(`http://localhost:3000/ecomerce/search/products?keyword=${query}`);
+          const response = await axios.get(
+            `http://localhost:3000/ecomerce/search/products?keyword=${query}`
+          );
           setProducts(response.data.data);
         } catch (error) {
-          console.error('Error fetching products:', error);
+          console.error("Error fetching products:", error);
         }
       }
     };
@@ -43,11 +43,35 @@ export default function SearchProducts() {
       [id]: !prev[id],
     }));
   };
+  const handleAddToCart = async (productId) => {
+    const userID = localStorage.getItem("userID"); // Get the userID from localStorage
+
+    if (!userID) {
+      alert("User ID not found. Please login.");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/cart/add-to-cart",
+        { productId, quantity: 1 }, // Sending productId and quantity
+        { headers: { "x-user-id": userID } } // Including userID in the headers
+      );
+
+      if (response.status === 200) {
+        alert("Product added to cart successfully!");
+      } else {
+        alert("Failed to add product to cart.");
+      }
+    } catch (error) {
+      console.error("Error adding product to cart:", error.message);
+    }
+  };
 
   return (
     <div className="container mt-5">
       <h1 className="mb-4 text-center">Search Results</h1>
-      
+
       {products.length > 0 ? (
         <div className="row">
           {products.map((product) => (
@@ -61,41 +85,65 @@ export default function SearchProducts() {
               <div className="card shadow-sm">
                 <div className="card-body">
                   <h5 className="card-title mb-3">{product.name}</h5>
-                  
+
                   <div>
                     <strong>Images:</strong>
                     <div className="d-flex image-container mb-3">
                       {product.images.map((img) => (
-                        <motion.img 
-                          key={img._id} 
-                          src={img.url} 
-                          alt={img.alt} 
-                          className="img-thumbnail" 
-                          style={{ width: '100px', cursor: 'pointer' }} 
+                        <motion.img
+                          key={img._id}
+                          src={img.url}
+                          alt={img.alt}
+                          className="img-thumbnail"
+                          style={{ width: "100px", cursor: "pointer" }}
                           whileHover={{ scale: 1.1 }}
-                          onClick={() => handleImageClick(img.url)} 
+                          onClick={() => handleImageClick(img.url)}
                         />
                       ))}
                     </div>
                   </div>
 
-                  <p className="card-text mb-3"><strong>Description:</strong> {product.description}</p>
+                  <p className="card-text mb-3">
+                    <strong>Description:</strong> {product.description}
+                  </p>
 
                   <div className="mt-3">
-                    <button className="btn btn-success button-spacing">Buy</button>
-                    <button className="btn btn-secondary button-spacing">Add to Cart</button>
-                    <button className="btn btn-info button-spacing" onClick={() => toggleDetails(product._id)}>
-                      {showDetails[product._id] ? 'Hide Details' : 'Show Details'}
+                    <button className="btn btn-success button-spacing">
+                      Buy
+                    </button>
+                    <button
+                      className="btn btn-secondary button-spacing"
+                      onClick={() => handleAddToCart(product._id)}
+                    >
+                      Add to Cart
+                    </button>
+                    <button
+                      className="btn btn-info button-spacing"
+                      onClick={() => toggleDetails(product._id)}
+                    >
+                      {showDetails[product._id]
+                        ? "Hide Details"
+                        : "Show Details"}
                     </button>
                   </div>
-                  
+
                   {showDetails[product._id] && (
                     <div className="mt-3">
-                      <p className="card-text"><strong>Price:</strong> ${product.price.toFixed(2)}</p>
-                      <p className="card-text"><strong>Category:</strong> {product.category}</p>
-                      <p className="card-text"><strong>Stock:</strong> {product.stock}</p>
-                      <p className="card-text"><strong>Brand:</strong> {product.brand}</p>
-                      <p className="card-text"><strong>Rating:</strong> {product.rating}</p>
+                      <p className="card-text">
+                        <strong>Price:</strong> ${product.price.toFixed(2)}
+                      </p>
+                      <p className="card-text">
+                        <strong>Category:</strong> {product.category}
+                      </p>
+                      <p className="card-text">
+                        <strong>Stock:</strong> {product.stock}
+                      </p>
+                      <p className="card-text">
+                        <strong>Brand:</strong> {product.brand}
+                      </p>
+                      <p className="card-text">
+                        <strong>Rating:</strong> {product.rating}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -109,13 +157,13 @@ export default function SearchProducts() {
 
       {/* Modal for showing large image */}
       {selectedImage && (
-        <motion.div 
-          className="modal fade show" 
-          style={{ display: 'block' }} 
-          initial={{ opacity: 0 }} 
-          animate={{ opacity: 1 }} 
+        <motion.div
+          className="modal fade show"
+          style={{ display: "block" }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
-          tabIndex="-1" 
+          tabIndex="-1"
           role="dialog"
         >
           <div className="modal-dialog modal-dialog-centered" role="document">
