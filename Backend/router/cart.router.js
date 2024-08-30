@@ -1,79 +1,41 @@
-const express = require('express');
-const services = require('../services/cart.service');
+// cart.routes.js
+
+const express = require("express");
 const router = express.Router();
-const { authenticateToken } = require('../router/user.router'); // Correct import
+const Cart = require("../schema/cart.model"); 
+const Product = require("../schema/product.schema"); 
+const cartService = require("../services/cart.service");
 
-// Add product to cart
-router.post('/add-to-cart', authenticateToken, async (req, res) => {
-  try {
-    const { productId, quantity } = req.body;
-    const userId = req.user.user.id;
+router.post("/add-to-cart", cartService.addToCart);
 
-    const updatedCart = await services.addToCart(userId, productId, quantity);
-    
-    res.json({
-      status: res.statusCode,
-      message: 'Product added to cart',
-      data: updatedCart,
-    });
-  } catch (error) {
-    console.error(error.message);
-    res.status(500).json({ message: 'Server error' });
+router.get("/get-cart", async (req, res) => {
+  const userID = req.headers["x-user-id"]; 
+
+  if (!userID) {
+    return res.status(401).json({ message: "User ID is required." });
   }
-});
 
-// View cart
-router.get('/view-cart', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.user.id;
-    const cart = await services.getCartByUserId(userId);
 
-    res.json({
-      status: res.statusCode,
-      message: 'Cart fetched successfully',
-      data: cart,
-    });
+    const cart = await Cart.findOne({ userID }).populate("items.product");
+    if (!cart) {
+      return res.status(404).json({ message: "Cart not found." });
+    }
+   
+   
+    let totalAmount = 0;
+    for (const item of cart.items) {
+      const product = await Product.findById(item.product);
+      if (product) {
+        totalAmount += product.price * item.quantity;
+      }
+    }
+
+  
+    res.status(200).json({ data: cart, totalAmount });
   } catch (error) {
-    console.error(error.message);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Update product quantity in cart
-router.put('/update-cart', authenticateToken, async (req, res) => {
-  try {
-    const { productId, quantity } = req.body;
-    const userId = req.user.user.id;
-
-    const updatedCart = await services.updateCartItem(userId, productId, quantity);
-
-    res.json({
-      status: res.statusCode,
-      message: 'Cart updated successfully',
-      data: updatedCart,
-    });
-  } catch (error) {
-    console.error(error.message);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Remove product from cart
-router.delete('/remove-from-cart/:productId', authenticateToken, async (req, res) => {
-  try {
-    const userId = req.user.user.id;
-    const productId = req.params.productId;
-
-    const updatedCart = await services.removeFromCart(userId, productId);
-
-    res.json({
-      status: res.statusCode,
-      message: 'Product removed from cart',
-      data: updatedCart,
-    });
-  } catch (error) {
-    console.error(error.message);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error retrieving cart:", error);
+    res.status(500).json({ message: "Server error." });
   }
 });
 

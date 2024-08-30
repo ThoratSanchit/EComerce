@@ -1,37 +1,28 @@
-const db = require('../db/d');
+// cart.model.js
 
-const cartSchema = new db.Schema({
-  userId: {
-    type: db.Schema.Types.ObjectId,
-    ref: 'User',
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
+
+const cartItemSchema = new Schema({
+  product: {
+    type: Schema.Types.ObjectId,
+    ref: "Product", // Reference to Product model
     required: true,
   },
-  items: [
-    {
-      product: {
-        type: db.Schema.Types.ObjectId,
-        ref: 'Product',
-        required: true,
-      },
-      name: {
-        type: String,
-        required: true,
-      },
-      price: {
-        type: Number,
-        required: true,
-      },
-      quantity: {
-        type: Number,
-        required: true,
-        min: 1,
-      },
-    },
-  ],
-  totalAmount: {
+  quantity: {
     type: Number,
-    default: 0,
+    required: true,
+    min: 1,
   },
+});
+
+const cartSchema = new Schema({
+  userID: {
+    type: Number,
+    required: true,
+    unique: true, 
+  },
+  items: [cartItemSchema],
   createdAt: {
     type: Date,
     default: Date.now,
@@ -42,17 +33,11 @@ const cartSchema = new db.Schema({
   },
 });
 
-cartSchema.pre('save', function (next) {
+cartSchema.pre("save", function (next) {
   this.updatedAt = Date.now();
-  
-  // Calculate total amount and round down to the nearest whole number
-  this.totalAmount = Math.floor(
-    this.items.reduce((total, item) => total + item.price * item.quantity, 0)
-  );
-  
   next();
 });
 
-const Cart = db.model('Cart', cartSchema);
+const Cart = mongoose.model("Cart", cartSchema);
 
 module.exports = Cart;
