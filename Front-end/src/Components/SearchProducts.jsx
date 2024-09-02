@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import "../css/GetAllProducts.css";
 
@@ -44,22 +45,24 @@ export default function SearchProducts() {
     }));
   };
   const handleAddToCart = async (productId) => {
-    const userID = localStorage.getItem("userID"); // Get the userID from localStorage
+    const authToken = localStorage.getItem("authToken");
 
-    if (!userID) {
-      alert("User ID not found. Please login.");
+    if (!authToken) {
+      // alert("User is not authenticated. Please login.");
+      toast.success("Please login or signup")
       return;
     }
 
     try {
       const response = await axios.post(
         "http://localhost:3000/cart/add-to-cart",
-        { productId, quantity: 1 }, // Sending productId and quantity
-        { headers: { "x-user-id": userID } } // Including userID in the headers
+        { productId, quantity: 1 },
+        { headers: { Authorization: `Bearer ${authToken}` } }
       );
 
       if (response.status === 200) {
-        alert("Product added to cart successfully!");
+       
+        toast.success("Product added successfully")
       } else {
         alert("Failed to add product to cart.");
       }

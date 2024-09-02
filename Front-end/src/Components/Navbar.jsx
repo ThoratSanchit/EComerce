@@ -16,48 +16,38 @@ export default function Navbar() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const storedEmail = localStorage.getItem("userEmail");
-    const storedName = localStorage.getItem("userName");
-
-    if (storedEmail && storedName) {
-      setUserEmail(storedEmail);
-      setUserName(storedName);
-    } else {
-      const token = localStorage.getItem("authToken");
-      if (token) {
-        axios
-          .get("http://localhost:3000/auth/check-auth", {
-            headers: {
-              "x-access-token": token,
-            },
-          })
-          .then((response) => {
-            if (response.data.email) {
-              setUserEmail(response.data.email);
-              setUserName(response.data.name);
-            }
-          })
-          .catch((error) => {
-            console.error(
-              "Error fetching user data:",
-              error.response ? error.response.data : error.message
-            );
-            localStorage.removeItem("authToken");
-            setUserEmail(null);
-          });
-      }
+    const token = localStorage.getItem("authToken");
+  
+    if (token) {
+      axios
+        .get("http://localhost:3000/auth/check-auth", {
+          headers: {
+            "Authorization": `Bearer ${token}`,
+          },
+        })
+        .then((response) => {
+          if (response.data.email) {
+            setUserEmail(response.data.email);
+            setUserName(response.data.name);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching user data:", error.response ? error.response.data : error.message);
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("userEmail");
+          localStorage.removeItem("userName");
+          setUserEmail(null);
+          setUserName(null);
+        });
     }
-  }, []); // Run only once after component mounts
-
-
-
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("authToken");
     localStorage.removeItem("userEmail");
     localStorage.removeItem("userName");
-    localStorage.removeItem("userID")
-    localStorage.removeItem("userId")
+    localStorage.removeItem("userID");
+
     setUserEmail(null);
     setUserName(null);
     setShowLogoutModal(false);
@@ -114,11 +104,7 @@ export default function Navbar() {
               </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink
-                className="nav-link"
-                to="/cart"
-                
-              >
+              <NavLink className="nav-link" to="/cart">
                 Cart
               </NavLink>
             </li>

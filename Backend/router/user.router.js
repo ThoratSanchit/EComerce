@@ -3,41 +3,36 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../schema/user.model');
 const router = express.Router();
+const SECRET_KEY = process.env.SECRET_KEY || "12345"; 
 
-const SECRET_KEY = 'your_secret_key';
 
 // Register route
 router.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
 
   try {
-    // Check if the user already exists
     let user = await User.findOne({ email });
-    const userID = +Date.now(); // Generate a unique userID
+    const userID = +Date.now(); 
 
     if (user) {
-      return res.status(400).json({ message: 'User already exists please login' });
+      return res.status(400).json({ message: 'User already exists, please login' });
     }
 
-    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create a new user
-    user = new User({
-      name,
-      email,
-      password: hashedPassword,
-      userID
-    });
-
+    user = new User({ name, email, password: hashedPassword, userID });
     await user.save();
 
-    // Respond with user details including userID
-    res.status(201).json({ 
-      message: 'User registered successfully',
-      email: user.email,
-      name: user.name,
-      userID: user.userID  
+    const payload = { user: { id: user.userID } };
+
+    jwt.sign(payload, SECRET_KEY, { expiresIn: '1h' }, (err, token) => {
+      if (err) throw err;
+      res.status(201).json({
+        message: 'User registered successfully',
+        token,
+        email: user.email,
+        name: user.name,
+        userID: user.userID  
+      });
     });
   } catch (err) {
     console.error(err.message);
@@ -50,64 +45,50 @@ router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
-   
     let user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: 'Enter the valid Email.' });
+      return res.status(400).json({ message: 'Enter a valid email.' });
     }
 
-  
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Enter the valid Password.' });
+      return res.status(400).json({ message: 'Enter a valid password.' });
     }
 
-   
-    const payload = {
-      user: {
-        id: user.userID, 
-      },
-    };
+    const payload = { user: { id: user.userID } };
 
-    jwt.sign(
-      payload,
-      SECRET_KEY,
-      { expiresIn: '1h' },
-      (err, token) => {
-        if (err) throw err;
-        res.json({
-          
-          token,
-          userID: user.userID
-        });
-      }
-    );
+    jwt.sign(payload, SECRET_KEY, { expiresIn: '1h' }, (err, token) => {
+      if (err) throw err;
+      res.json({
+        message: 'Login successful',
+        token,
+        userID: user.userID
+      });
+    });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
   }
 });
 
-// Middleware to verify the JWT token
+// function for decoding the authToken
 const authenticateToken = (req, res, next) => {
-  const token = req.headers['x-access-token'];
-  if (!token) return res.sendStatus(401); 
+  const token = req.headers['authorization']?.split(' ')[1];
+  if (!token) return res.sendStatus(401);
 
   jwt.verify(token, SECRET_KEY, (err, user) => {
-    if (err) return res.sendStatus(403); 
+    if (err) return res.sendStatus(403);
     req.user = user;
     next();
   });
 };
 
-// Authentication check route
+// Authcheck route for decode user
 router.get('/check-auth', authenticateToken, async (req, res) => {
   try {
-    
     const user = await User.findOne({ userID: req.user.user.id }).select('-password');
     if (!user) return res.sendStatus(404);
-
-    res.json({ email: user.email, name: user.name, userID: user.userID }); 
+    res.json({ email: user.email, name: user.name, userID: user.userID });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');

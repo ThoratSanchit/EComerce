@@ -1,45 +1,44 @@
-// cartController.js
+const Cart = require('../schema/cart.model');
+const Product = require('../schema/product.schema');
+const jwt = require('jsonwebtoken');
 
-const Cart = require('../schema/cart.model'); // Import the Cart model
-const Product = require('../schema/product.schema'); // Import the Product model
+const jwtSecret = process.env.SECRET_KEY || '12345'; 
 
 exports.addToCart = async (req, res) => {
   const { productId, quantity } = req.body;
-  const userID = req.headers['x-user-id']; // Get userID from headers
+  const authHeader = req.headers['authorization'];
 
-  if (!userID) {
-    return res.status(401).json({ message: 'User ID is required.' });
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ message: 'Authorization token is required.' });
   }
 
+  const token = authHeader.split(' ')[1]; 
+
   try {
-    // Check if product exists
+  
+    const decoded = jwt.verify(token, jwtSecret); 
+    const userID = decoded.user.id; // this is my registration time generated userID
+    console.log(userID)
     const product = await Product.findById(productId);
     if (!product) {
       return res.status(404).json({ message: 'Product not found.' });
     }
 
-    // Find or create a cart for the user
     let cart = await Cart.findOne({ userID });
-
     if (!cart) {
       cart = new Cart({ userID, items: [] });
     }
 
-    // Check if item already exists in cart
-    const itemIndex = cart.items.findIndex(item => item.product.toString() === productId);
-
-    if (itemIndex > -1) {
-      // Item exists, update quantity
-      cart.items[itemIndex].quantity += quantity;
+    const existingItemIndex = cart.items.findIndex(item => item.product.toString() === productId);
+    if (existingItemIndex !== -1) {
+      cart.items[existingItemIndex].quantity += quantity;
     } else {
-      // New item, add to cart
       cart.items.push({ product: productId, quantity });
     }
 
-    // Save cart
     await cart.save();
-    
-    res.status(200).json({ message: 'Item added to cart.', data: cart });
+
+    res.status(200).json({ message: 'Product added to cart.', data: cart });
   } catch (error) {
     console.error('Error adding to cart:', error);
     res.status(500).json({ message: 'Server error.' });

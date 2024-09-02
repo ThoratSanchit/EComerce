@@ -3,18 +3,18 @@ import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { motion } from "framer-motion";
 import "../css/GetAllProducts.css";
+import { toast } from "react-toastify";
 
 export default function GetAllProducts() {
   const [products, setProducts] = useState([]);
+  const [cartItems, setCartItems] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [showDetails, setShowDetails] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:3000/ecomerce/allProducts"
-        );
+        const response = await axios.get("http://localhost:3000/ecomerce/allProducts");
         setProducts(response.data.data);
       } catch (error) {
         console.error("Error fetching data:", error.message);
@@ -22,6 +22,29 @@ export default function GetAllProducts() {
     };
 
     fetchData();
+  }, []);
+
+  useEffect(() => {
+    const fetchCart = async () => {
+      const authToken = localStorage.getItem("authToken");
+
+      if (!authToken) {
+        console.error("Auth token not found. Please login.");
+        return;
+      }
+
+      try {
+        const response = await axios.get("http://localhost:3000/cart", {
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+
+        setCartItems(response.data.items); 
+      } catch (error) {
+        console.error("Error fetching cart:", error.message);
+      }
+    };
+
+    fetchCart();
   }, []);
 
   const handleImageClick = (imgUrl) => {
@@ -40,22 +63,24 @@ export default function GetAllProducts() {
   };
 
   const handleAddToCart = async (productId) => {
-    const userID = localStorage.getItem("userID"); // Get the userID from localStorage
+    const authToken = localStorage.getItem("authToken");
 
-    if (!userID) {
-      alert("User ID not found. Please login.");
+    if (!authToken) {
+     
+      toast.success("Please login or signup")
       return;
     }
 
     try {
       const response = await axios.post(
         "http://localhost:3000/cart/add-to-cart",
-        { productId, quantity: 1 }, // Sending productId and quantity
-        { headers: { "x-user-id": userID } } // Including userID in the headers
+        { productId, quantity: 1 },
+        { headers: { Authorization: `Bearer ${authToken}` } }
       );
 
       if (response.status === 200) {
-        alert("Product added to cart successfully!");
+       
+        toast.success("Product added successfully")
       } else {
         alert("Failed to add product to cart.");
       }
@@ -104,9 +129,7 @@ export default function GetAllProducts() {
                   </p>
 
                   <div className="mt-3">
-                    <button className="btn btn-success button-spacing">
-                      Buy
-                    </button>
+                    <button className="btn btn-success button-spacing">Buy</button>
                     <button
                       className="btn btn-secondary button-spacing"
                       onClick={() => handleAddToCart(product._id)}
@@ -117,9 +140,7 @@ export default function GetAllProducts() {
                       className="btn btn-info button-spacing"
                       onClick={() => toggleDetails(product._id)}
                     >
-                      {showDetails[product._id]
-                        ? "Hide Details"
-                        : "Show Details"}
+                      {showDetails[product._id] ? "Hide Details" : "Show Details"}
                     </button>
                   </div>
 
